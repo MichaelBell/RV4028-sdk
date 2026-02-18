@@ -1,0 +1,40 @@
+MEMORY
+{
+    rom(rx)   : ORIGIN = 0x8000000, LENGTH = 0x1000
+    ram(rw)   : ORIGIN = 0x07f0000, LENGTH = 0x10000
+}
+SECTIONS
+{
+    .boot : { *(.boot) 
+        KEEP (*(.boot)) 
+    } > rom
+    .text : { *(.text*) } > rom
+    .rodata : { *(.rodata*) } > rom
+
+    .data : { 
+        __data_start_unaligned__ = .;
+        . = ALIGN(4);
+        __data_start__ = .;
+        *(.sdata*) *(.data*) 
+        . = ALIGN(4);
+        __data_end__ = .;
+    } > ram AT> rom
+    __data_lma = LOADADDR(.data) + __data_start__ - __data_start_unaligned__;
+
+    .bss (NOLOAD): { 
+        . = ALIGN(4);
+        __bss_start__ = .;
+        *(.sbss*) *(.bss*)
+        . = ALIGN(4);
+        __bss_end__ = .;
+    } > ram
+
+    .uninitialized_data (NOLOAD): {
+        . = ALIGN(16);
+        *(.uninitialized_data*)
+    } > ram
+
+    __global_pointer$ = 0x8000400;
+    __StackTop = ORIGIN(ram) + LENGTH(ram);
+    __StackLimit = __StackTop - 0x1000;
+}
