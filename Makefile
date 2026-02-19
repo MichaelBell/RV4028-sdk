@@ -21,8 +21,8 @@ clean:
 %.o: %.s
 	$(AS) -march=rv32i_zicsr $< -o $@
 
-$(PROJECT_NAME).elf: $(PROJECT_SOURCES:.c=.o) start.o
-	$(LD) $^ $(RISCV_TOOLCHAIN)/lib/gcc/riscv32-unknown-elf/*/libgcc.a -T memmap --gc-sections -o $@
+$(PROJECT_NAME).elf: $(PROJECT_SOURCES:.c=.o) start.o runtime.o uart.o
+	$(LD) $^ $(RISCV_TOOLCHAIN)/riscv32-unknown-elf/lib/libc.a $(RISCV_TOOLCHAIN)/riscv32-unknown-elf/lib/libm.a $(RISCV_TOOLCHAIN)/lib/gcc/riscv32-unknown-elf/*/libgcc.a -T memmap --gc-sections -o $@
 
 $(PROJECT_NAME).bin: $(PROJECT_NAME).elf
 	$(OBJCOPY) $< -O binary $@

@@ -7,6 +7,7 @@
 _start:
     li gp, 0x400
     la sp, __StackTop
+    jal __runtime_init
     call main
     j .
 

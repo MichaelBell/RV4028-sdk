@@ -1,22 +1,23 @@
 MEMORY
 {
-    ram(rwx)  : ORIGIN = 0x0000000, LENGTH = 0x0800000
+    rom(rx)   : ORIGIN = 0x0000000, LENGTH = 0x00fff00
+    ram(rw)   : ORIGIN = 0x0100000, LENGTH = 0x0700000
 }
 SECTIONS
 {
-    .vectors : {
+    .vectors (READONLY) : {
         KEEP (*(.vectors))
-    } > ram
+    } > rom
 
     /* Used for interrupt context */
-    .scratch : {
+    .scratch (READONLY) : {
         . += 0x80;
-    } > ram
+    } > rom
 
-    .srodata : { *(.srodata*) } > ram
-    .early_text : { *(.early_text*) } > ram
-    .text : { *(.text*) } > ram
-    .rodata : { *(.rodata*) } > ram
+    .srodata (READONLY) : { *(.srodata*) } > rom
+    .early_text : { *(.early_text*) } > rom
+    .text : { *(.text*) } > rom
+    .rodata (READONLY) : { *(.rodata*) } > rom
 
     .data : { 
         __data_start_unaligned__ = .;
@@ -25,7 +26,8 @@ SECTIONS
         *(.sdata*) *(.data*) 
         . = ALIGN(16);
         __data_end__ = .;
-    } > ram
+    } > ram AT> rom
+    __data_lma = LOADADDR(.data) + __data_start__ - __data_start_unaligned__;
 
     .bss (NOLOAD): { 
         . = ALIGN(16);
