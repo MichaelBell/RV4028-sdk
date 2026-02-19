@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include "uart.h"
 
-extern char __HeapLimit; /* Set by linker.  */
+extern char __StackLimit; /* Set by linker.  */
 extern char __HeapStart; /* Set by linker.  */
 char* __tinyqv_heap_end = &__HeapStart;
 
@@ -37,7 +37,7 @@ void *_sbrk(int incr) {
 
     //uart_printf("SBRK: %p -> %p\r\n", __tinyqv_heap_end, next_heap_end);
 
-    if (next_heap_end > (&__HeapLimit)) {
+    if (next_heap_end > (&__StackLimit)) {
         return (char *) -1;
     }
 
@@ -99,7 +99,11 @@ off_t _lseek(__unused int fd, __unused off_t pos, __unused int whence) {
     return -1;
 }
 
-int __attribute__((weak)) _fstat(__unused int fd, __unused struct stat *buf) {
+int __attribute__((weak)) _fstat(int fd, struct stat *st) {
+    if (fd == STDIO_HANDLE_STDIN || fd == STDIO_HANDLE_STDOUT || fd == STDIO_HANDLE_STDERR) {
+        st->st_mode = S_IFCHR;
+        return 0;
+    }
     return -1;
 }
 

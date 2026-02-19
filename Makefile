@@ -1,16 +1,10 @@
-PROJECT_NAME ?= hello
-
-PROJECT_SOURCES ?= hello.c
-
 RISCV_TOOLCHAIN ?= /opt/rv4028
 
 CC = $(RISCV_TOOLCHAIN)/bin/riscv32-unknown-elf-gcc
 AS = $(RISCV_TOOLCHAIN)/bin/riscv32-unknown-elf-as
 AR = $(RISCV_TOOLCHAIN)/bin/riscv32-unknown-elf-ar
-LD = $(RISCV_TOOLCHAIN)/bin/riscv32-unknown-elf-ld
-OBJCOPY = $(RISCV_TOOLCHAIN)/bin/riscv32-unknown-elf-objcopy
 
-all: $(PROJECT_NAME).uf2
+all: rv4028.a start.o
 
 clean:
 	cd $(dir $(PROJECT_NAME)) && rm *.o *.elf *.bin *.hex
@@ -21,11 +15,5 @@ clean:
 %.o: %.s
 	$(AS) -march=rv32i_zicsr $< -o $@
 
-$(PROJECT_NAME).elf: $(PROJECT_SOURCES:.c=.o) start.o runtime.o uart.o
-	$(LD) $^ $(RISCV_TOOLCHAIN)/riscv32-unknown-elf/lib/libc.a $(RISCV_TOOLCHAIN)/riscv32-unknown-elf/lib/libm.a $(RISCV_TOOLCHAIN)/lib/gcc/riscv32-unknown-elf/*/libgcc.a -T memmap --gc-sections -o $@
-
-$(PROJECT_NAME).bin: $(PROJECT_NAME).elf
-	$(OBJCOPY) $< -O binary $@
-
-$(PROJECT_NAME).uf2: $(PROJECT_NAME).bin
-	./mkuf2.py $< $@
+rv4028.a: uart.o runtime.o
+	$(AR) rcs $@ $^
