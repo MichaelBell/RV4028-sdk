@@ -18,8 +18,24 @@ static void read_flash(uint32_t addr, uint32_t len, uint8_t* buf) {
     }
 }
 
+static void reset_leds() {
+    // Reset a string of up to 6 LEDs to off
+    volatile uint8_t* ws2812_ctrl = (volatile uint8_t*)0x8FFFFF80;
+    *ws2812_ctrl = 254;
+    for (uint8_t i = 0; i < 6; ++i) {
+        ws2812_ctrl[0] = i;
+        ws2812_ctrl[2] = 0;
+        ws2812_ctrl[4] = 0;
+        ws2812_ctrl[6] = 0;
+        (void)*ws2812_ctrl;
+    }
+    *ws2812_ctrl = 255;
+}
+
 int main(void) {
     printf("==  RV4028 Bootloader: Loading program ...                ==\n");
+
+    reset_leds();
 
     uint32_t magic, magic2;
     read_flash(0, 4, (uint8_t*)&magic);

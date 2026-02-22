@@ -15,5 +15,5 @@ clean:
 %.o: %.s
 	$(AS) -march=rv32i_zicsr $< -o $@
 
-rv4028.a: uart.o runtime.o
+rv4028.a: uart.o runtime.o leds.o
 	$(AR) rcs $@ $^

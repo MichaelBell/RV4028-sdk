@@ -1,11 +1,34 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <leds.h>
 
 extern char __StackLimit; /* Set by linker.  */
 extern char __HeapStart; /* Set by linker.  */
 
 static uint32_t test_val = 0x13457aef;
+
+
+
+void update_led(bool reset) {
+    const uint8_t max_led_value = 20;
+    static uint8_t led_value = 0;
+    static bool led_value_increasing = true;
+
+    if (reset) {
+        led_value = 0;
+        led_value_increasing = true;
+    }
+    else if (led_value_increasing) {
+        if (++led_value == max_led_value) led_value_increasing = false;
+    }
+    else {
+        if (--led_value == 0) led_value_increasing = true;
+    }
+
+    leds_set_pixel(0, led_value, 0, 0);
+    leds_update();
+}
 
 int ptr32_test(int max_bytes) {
     uint32_t* ptr = (uint32_t*)&__HeapStart;
@@ -13,12 +36,17 @@ int ptr32_test(int max_bytes) {
     if (end - ptr > max_bytes / 4) end = ptr + max_bytes / 4;
 
     printf("Testing from %p to %p\n", ptr, end);
+    update_led(true);
 
     uint32_t val = test_val;
     
     while (ptr < end) {
         *ptr++ = val;
         val = (val << 1) | (val >> 31);
+
+        if (((uintptr_t)ptr & 0xFFFF) == 0) {
+            update_led(false);
+        }
     }
 
     ptr = (uint32_t*)&__HeapStart;
@@ -34,6 +62,10 @@ int ptr32_test(int max_bytes) {
             ++fails;
         }
         val = (val << 1) | (val >> 31);
+
+        if (((uintptr_t)ptr & 0xFFFF) == 0) {
+            update_led(false);
+        }
     }
 
     return fails;
@@ -45,6 +77,7 @@ int ptr8_test(int max_bytes) {
     if (end - start > max_bytes) end = start + max_bytes;
 
     printf("Testing from %p to %p\n", start, end);
+    update_led(true);
 
     int fails = 0;
 
@@ -56,6 +89,10 @@ int ptr8_test(int max_bytes) {
             *ptr = val;
             ptr += 7;
             val = (val << 1) | (val >> 31);
+
+            if (((uintptr_t)ptr & 0x3FFFC) == 0) {
+                update_led(false);
+            }
         }
 
         ptr = start + i;
@@ -71,6 +108,10 @@ int ptr8_test(int max_bytes) {
             }
             ptr += 7;
             val = (val << 1) | (val >> 31);
+
+            if (((uintptr_t)ptr & 0x3FFFC) == 0) {
+                update_led(false);
+            }
         }
 
         if (i > 0) {
@@ -89,6 +130,10 @@ int ptr8_test(int max_bytes) {
                 }
                 ptr += 7;
                 val = (val << 1) | (val >> 31);
+
+                if (((uintptr_t)ptr & 0x3FFFC) == 0) {
+                    update_led(false);
+                }
             }
         }
     }

@@ -18,7 +18,7 @@ clean:
 	cd $(dir $(PROJECT_NAME)) && rm *.o *.elf *.bin *.hex
 
 %.o: %.c
-	$(CC) -O2 -march=rv32i -nostdlib -nostartfiles -ffreestanding -ffunction-sections -fdata-sections -Wall -Werror -Wno-format -lc -c $< -o $@
+	$(CC) -O2 -march=rv32i -I$(RV4028_SDK) -nostdlib -nostartfiles -ffreestanding -ffunction-sections -fdata-sections -Wall -Werror -Wno-format -lc -c $< -o $@
 
 %.o: %.s
 	$(AS) -march=rv32i_zicsr $< -o $@
