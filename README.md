@@ -1,3 +1,3 @@
 # RV4028 SDK
 
-This is the C SDK and bootloader for the [RV4028](https://github.com/MichaelBell/RV4028) hackable RISC-V computer.
+Development has move to [Codeberg](https://codeberg.org/rebelmike/rv4028-sdk).
